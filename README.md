@@ -21,6 +21,8 @@ Veronica é um chat para terminal com respostas em streaming, contexto de conver
 
 Cumprimentos curtos e a pergunta sobre o criador têm respostas imediatas, sem consultar o modelo. Nas demais perguntas, a Veronica desativa o modo de raciocínio do Qwen e mantém o modelo carregado na memória para reduzir a espera entre mensagens. Em máquinas sem GPU, a geração do Qwen 8B ainda pode levar alguns segundos ou mais; a velocidade depende do hardware.
 
+Se o modelo ainda não estiver na memória, a primeira pergunta mostra **“Preparando resposta no Qwen 8B...”** enquanto ele carrega. Aperte `Ctrl+C` para cancelar somente essa pergunta e voltar ao prompt; use `/sair` para encerrar o chat. Manter o modelo carregado acelera as próximas perguntas, mas ocupa cerca de 6 GB de RAM neste ambiente.
+
 ## Instalação
 
 Requer Python 3.10+ e [Ollama](https://ollama.com/download).

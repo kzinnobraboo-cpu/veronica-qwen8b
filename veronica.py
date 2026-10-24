@@ -116,6 +116,9 @@ def main(argv=None) -> int:
     print_header(args.model, color)
     try:
         models = available_models(base)
+    except KeyboardInterrupt:
+        print("\nAté logo.")
+        return 130
     except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError) as exc:
         print(paint("Ollama indisponível.", PINK, color))
         print(f"Inicie o serviço: ollama serve\nDetalhe: {exc}", file=sys.stderr)
@@ -160,18 +163,35 @@ def main(argv=None) -> int:
                 return 0
             continue
         messages.append({"role": "user", "content": prompt})
-        print(paint("\n✦ Veronica  ", PINK + BOLD, color), end="", flush=True)
         immediate = instant_reply(prompt)
         if immediate is not None:
-            print(immediate)
+            print(paint("\n✦ Veronica  ", PINK + BOLD, color) + immediate)
             messages.append({"role": "assistant", "content": immediate})
             if single:
                 return 0
             continue
+        print(paint("\n◌ Preparando resposta no Qwen 8B... Ctrl+C cancela", DIM, color), flush=True)
+        started = False
+
+        def show_chunk(part: str) -> None:
+            nonlocal started
+            if not started:
+                if color:
+                    print("\r\033[2K", end="")
+                print(paint("✦ Veronica  ", PINK + BOLD, color), end="", flush=True)
+                started = True
+            print(part, end="", flush=True)
+
         try:
-            answer = chat(base, args.model, messages, lambda part: print(part, end="", flush=True))
+            answer = chat(base, args.model, messages, show_chunk)
             print()
             messages.append({"role": "assistant", "content": answer})
+        except KeyboardInterrupt:
+            messages.pop()
+            print("\nPergunta cancelada. Pode tentar outra.")
+            if single:
+                return 130
+            continue
         except (urllib.error.URLError, TimeoutError, OSError, ValueError, RuntimeError) as exc:
             messages.pop()
             print(f"\nErro ao consultar o modelo: {exc}", file=sys.stderr)

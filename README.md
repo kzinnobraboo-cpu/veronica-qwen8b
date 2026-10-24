@@ -19,6 +19,8 @@
 
 Veronica é um chat para terminal com respostas em streaming, contexto de conversa, gradiente ANSI e interface inspirada na estética limpa de ferramentas como OpenCode. A interface não aplica filtros de conteúdo próprios. As respostas dependem do modelo escolhido.
 
+Cumprimentos curtos e a pergunta sobre o criador têm respostas imediatas, sem consultar o modelo. Nas demais perguntas, a Veronica desativa o modo de raciocínio do Qwen e mantém o modelo carregado na memória para reduzir a espera entre mensagens. Em máquinas sem GPU, a geração do Qwen 8B ainda pode levar alguns segundos ou mais; a velocidade depende do hardware.
+
 ## Instalação
 
 Requer Python 3.10+ e [Ollama](https://ollama.com/download).

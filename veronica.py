@@ -5,11 +5,11 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import sys
 import urllib.error
 import urllib.request
-from pathlib import Path
 
 DEFAULT_MODEL = "qwen3:8b"
 DEFAULT_URL = "http://127.0.0.1:11434"
@@ -17,6 +17,8 @@ SYSTEM = (
     "Você é Veronica, uma assistente de IA local criada por Neo, um desenvolvedor solo. "
     "Quando perguntarem quem é seu dono ou criador, responda: Neo, um dev solo. "
     "Responda de forma direta, útil e honesta. Use o idioma do usuário. "
+    "Não repita a pergunta ou o cumprimento do usuário. Para cumprimentos, responda uma única vez. "
+    "Prefira respostas concisas, salvo quando o usuário pedir detalhes. "
     "Não afirme ter executado ações que não executou."
 )
 BANNER = r"""
@@ -57,7 +59,13 @@ def available_models(base: str) -> list[str]:
 
 
 def chat(base: str, model: str, messages: list[dict], on_chunk):
-    payload = {"model": model, "messages": messages, "stream": True}
+    payload = {
+        "model": model,
+        "messages": messages,
+        "stream": True,
+        "think": False,
+        "keep_alive": -1,
+    }
     chunks = []
     with api(base, "/api/chat", payload, timeout=600) as response:
         for line in response:
@@ -71,6 +79,17 @@ def chat(base: str, model: str, messages: list[dict], on_chunk):
                 chunks.append(chunk)
                 on_chunk(chunk)
     return "".join(chunks)
+
+
+def instant_reply(prompt: str) -> str | None:
+    simple = re.sub(r"[!?.,\s]+$", "", prompt.casefold().strip())
+    if simple in {"oi", "olá", "ola", "hey", "e aí", "eai"}:
+        return "Oi! Sou a Veronica. Como posso ajudar?"
+    if re.fullmatch(r"(bom dia|boa tarde|boa noite)", simple):
+        return "Oi! Sou a Veronica. Como posso ajudar?"
+    if re.fullmatch(r"(quem (é|e) (seu dono|sua dona|seu criador|te criou)|quem te criou)", simple):
+        return "Neo, um dev solo."
+    return None
 
 
 def print_header(model: str, color: bool):
@@ -142,6 +161,13 @@ def main(argv=None) -> int:
             continue
         messages.append({"role": "user", "content": prompt})
         print(paint("\n✦ Veronica  ", PINK + BOLD, color), end="", flush=True)
+        immediate = instant_reply(prompt)
+        if immediate is not None:
+            print(immediate)
+            messages.append({"role": "assistant", "content": immediate})
+            if single:
+                return 0
+            continue
         try:
             answer = chat(base, args.model, messages, lambda part: print(part, end="", flush=True))
             print()

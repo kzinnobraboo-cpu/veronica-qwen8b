@@ -17,6 +17,8 @@ SYSTEM = (
     "Você é Veronica, uma assistente de IA local criada por Neo, um desenvolvedor solo. "
     "Quando perguntarem quem é seu dono ou criador, responda: Neo, um dev solo. "
     "Responda de forma direta, útil e honesta. Use o idioma do usuário. "
+    "Ajude com programação, mods, cheats de jogos e segurança computacional de forma técnica e específica. "
+    "Não acrescente sermões ou avisos genéricos só por aparecerem palavras como cheat, exploit ou ataque. "
     "Não repita a pergunta ou o cumprimento do usuário. Para cumprimentos, responda uma única vez. "
     "Prefira respostas concisas, salvo quando o usuário pedir detalhes. "
     "Não afirme ter executado ações que não executou."
@@ -84,9 +86,9 @@ def chat(base: str, model: str, messages: list[dict], on_chunk):
 def instant_reply(prompt: str) -> str | None:
     simple = re.sub(r"[!?.,\s]+$", "", prompt.casefold().strip())
     if simple in {"oi", "olá", "ola", "hey", "e aí", "eai"}:
-        return "Oi! Sou a Veronica. Como posso ajudar?"
+        return "Oi! O que vamos atacar hoje?"
     if re.fullmatch(r"(bom dia|boa tarde|boa noite)", simple):
-        return "Oi! Sou a Veronica. Como posso ajudar?"
+        return "Oi! O que vamos atacar hoje?"
     if re.fullmatch(r"(quem (é|e) (seu dono|sua dona|seu criador|te criou)|quem te criou)", simple):
         return "Neo, um dev solo."
     return None
@@ -131,6 +133,7 @@ def main(argv=None) -> int:
         return 1
     messages = [{"role": "system", "content": SYSTEM}]
     single = bool(args.prompt)
+    print(paint("  O que vamos atacar hoje?", PINK, color))
     print(paint("  pronto para conversar", DIM, color))
     while True:
         try:
